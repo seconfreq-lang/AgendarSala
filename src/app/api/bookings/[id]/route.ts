@@ -42,13 +42,21 @@ export async function PATCH(
     
     // On Vercel, return mock success response
     if (isProduction) {
+      // Simple validation for demo - just check required fields
+      if (!body.name || !body.room || !body.date || !body.startTime || !body.endTime) {
+        return NextResponse.json(
+          { error: 'Campos obrigatórios: name, room, date, startTime, endTime' },
+          { status: 400 }
+        )
+      }
+      
       const booking = {
         id,
-        name: body.name || 'Updated User',
-        room: body.room || 'MACHADO',
-        date: new Date(body.date || new Date()),
-        startTime: body.startTime || '09:00',
-        endTime: body.endTime || '10:00',
+        name: body.name,
+        room: body.room,
+        date: new Date(body.date),
+        startTime: body.startTime,
+        endTime: body.endTime,
         createdAt: new Date(),
         updatedAt: new Date(),
       }

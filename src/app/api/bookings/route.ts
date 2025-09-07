@@ -98,14 +98,22 @@ export async function POST(request: NextRequest) {
     if (isProduction) {
       console.log('Creating mock booking for Vercel')
       
+      // Simple validation for demo - just check required fields
+      if (!body.name || !body.room || !body.date || !body.startTime || !body.endTime) {
+        return NextResponse.json(
+          { error: 'Campos obrigatórios: name, room, date, startTime, endTime' },
+          { status: 400 }
+        )
+      }
+      
       // Return a mock created booking without complex validation
       const booking = {
         id: Date.now().toString(),
-        name: body.name || 'Mock User',
-        room: body.room || 'MACHADO',
-        date: new Date(),
-        startTime: body.startTime || '09:00',
-        endTime: body.endTime || '10:00',
+        name: body.name,
+        room: body.room,
+        date: new Date(body.date),
+        startTime: body.startTime,
+        endTime: body.endTime,
         createdAt: new Date(),
         updatedAt: new Date(),
       }
