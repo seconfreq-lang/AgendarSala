@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { BookingSchema, validateBookingConflict, ValidationError } from '@/lib/validation'
 import { getStartOfDayInSP, formatDateTimeForStorage } from '@/lib/timezone'
-import { Room } from '@prisma/client'
 
 export async function GET(request: NextRequest) {
   try {

@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import { Room, Booking } from '@prisma/client'
-import { format, addDays, isSameDay } from 'date-fns'
+import { format, isSameDay } from 'date-fns'
 import { Plus, Clock } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'

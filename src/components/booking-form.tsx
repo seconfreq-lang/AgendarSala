@@ -33,7 +33,7 @@ import {
 } from '@/components/ui/select'
 
 import { BookingSchema, BookingInput } from '@/lib/validation'
-import { generateTimeSlots, formatDateForDisplay } from '@/lib/timezone'
+import { generateTimeSlots } from '@/lib/timezone'
 
 interface BookingFormProps {
   trigger: React.ReactNode
@@ -100,8 +100,8 @@ export function BookingForm({
 
       if (!response.ok) {
         if (result.details) {
-          result.details.forEach((detail: any) => {
-            form.setError(detail.field as any, {
+          result.details.forEach((detail: { field: string; message: string }) => {
+            form.setError(detail.field as keyof BookingInput, {
               type: 'manual',
               message: detail.message,
             })

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Room, Booking } from '@prisma/client'
-import { format, addDays, subDays, startOfWeek, endOfWeek, addWeeks, subWeeks } from 'date-fns'
+import { format, addDays, subDays, startOfWeek, endOfWeek, addWeeks } from 'date-fns'
 import { ChevronLeft, ChevronRight, Calendar, List } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
