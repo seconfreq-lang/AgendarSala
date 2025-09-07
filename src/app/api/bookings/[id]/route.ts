@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { isVercel } from '@/lib/mock-data'
 
-// Check if running on Vercel/production
-const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'
-
-// Only import these in development
+// Only import these in development (when not on Vercel)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let prisma: any = null
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -17,7 +15,7 @@ let getStartOfDayInSP: any = null
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let formatDateTimeForStorage: any = null
 
-if (!isProduction) {
+if (!isVercel) {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const dbModule = require('@/lib/db')
@@ -42,7 +40,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log('PATCH /api/bookings/[id] - Environment check:', { isProduction })
+    console.log('PATCH /api/bookings/[id] - Environment check:', { isVercel })
     
     const { id } = await params
     const body = await request.json()
@@ -50,7 +48,7 @@ export async function PATCH(
     console.log('PATCH id:', id, 'body:', body)
     
     // On Vercel, return mock success response
-    if (isProduction) {
+    if (isVercel) {
       // Simple validation for demo - just check required fields
       if (!body.name || !body.room || !body.date || !body.startTime || !body.endTime) {
         return NextResponse.json(
@@ -167,13 +165,13 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log('DELETE /api/bookings/[id] - Environment check:', { isProduction })
+    console.log('DELETE /api/bookings/[id] - Environment check:', { isVercel })
     
     const { id } = await params
     console.log('DELETE id:', id)
     
     // On Vercel, return mock success response
-    if (isProduction) {
+    if (isVercel) {
       console.log('Returning mock delete success')
       return NextResponse.json({ success: true })
     }

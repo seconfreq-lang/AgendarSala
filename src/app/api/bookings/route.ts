@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { mockBookings } from '@/lib/mock-data'
+import { mockBookings, isVercel } from '@/lib/mock-data'
 
-// Check if running on Vercel/production
-const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'
-
-// Only import these in development
+// Only import these in development (when not on Vercel)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let prisma: any = null
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -18,7 +15,7 @@ let getStartOfDayInSP: any = null
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let formatDateTimeForStorage: any = null
 
-if (!isProduction) {
+if (!isVercel) {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const dbModule = require('@/lib/db')
@@ -43,12 +40,12 @@ export async function GET(request: NextRequest) {
     console.log('GET /api/bookings - Environment check:', {
       VERCEL: process.env.VERCEL,
       NODE_ENV: process.env.NODE_ENV,
-      isProduction
+      isVercel
     })
     
-    // Always use mock data in production/Vercel
-    if (isProduction) {
-      console.log('Using mock data for Vercel/production')
+    // Always use mock data on Vercel
+    if (isVercel) {
+      console.log('Using mock data for Vercel')
       return NextResponse.json({ bookings: mockBookings })
     }
     
@@ -98,13 +95,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('POST /api/bookings - Environment check:', { isProduction })
+    console.log('POST /api/bookings - Environment check:', { isVercel })
     
     const body = await request.json()
     console.log('POST body:', body)
     
     // On Vercel (demo), simulate creation but return mock data
-    if (isProduction) {
+    if (isVercel) {
       console.log('Creating mock booking for Vercel')
       
       // Simple validation for demo - just check required fields
