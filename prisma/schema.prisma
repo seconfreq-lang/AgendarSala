@@ -1,0 +1,30 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Booking {
+  id        String   @id @default(cuid())
+  room      Room
+  name      String
+  date      DateTime // usar a meia-noite local do dia (somente dia)
+  startTime String   // "HH:mm"
+  endTime   String   // "HH:mm"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([room, date])
+}
+
+enum Room {
+  MACHADO
+  FRANCA
+  SANTOS
+}
