@@ -14,11 +14,11 @@ export const BookingSchema = z.object({
     .max(100, 'Nome muito longo'),
   
   room: z.nativeEnum(Room, {
-    errorMap: () => ({ message: 'Sala inválida' })
+    message: 'Sala inválida'
   }),
   
   date: z.date({
-    errorMap: () => ({ message: 'Data inválida' })
+    message: 'Data inválida'
   }).refine((date) => !isDateInPast(date), {
     message: 'Não é possível agendar em datas passadas'
   }),

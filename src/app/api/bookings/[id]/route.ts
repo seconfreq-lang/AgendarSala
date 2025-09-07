@@ -5,10 +5,10 @@ import { getStartOfDayInSP, formatDateTimeForStorage } from '@/lib/timezone'
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
     const body = await request.json()
     
     // Check if booking exists
@@ -33,7 +33,7 @@ export async function PATCH(
       return NextResponse.json(
         { 
           error: 'Dados inválidos',
-          details: result.error.errors.map(err => ({
+          details: result.error.issues.map(err => ({
             field: err.path.join('.'),
             message: err.message,
           }))
@@ -101,10 +101,10 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
     
     // Check if booking exists
     const existingBooking = await prisma.booking.findUnique({
