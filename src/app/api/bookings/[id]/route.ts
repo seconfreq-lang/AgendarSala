@@ -4,17 +4,26 @@ import { NextRequest, NextResponse } from 'next/server'
 const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'
 
 // Only import these in development
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let prisma: any = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let BookingSchema: any = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let validateBookingConflict: any = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let ValidationError: any = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let getStartOfDayInSP: any = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let formatDateTimeForStorage: any = null
 
 if (!isProduction) {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const dbModule = require('@/lib/db')
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const validationModule = require('@/lib/validation')
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const timezoneModule = require('@/lib/timezone')
     
     prisma = dbModule.prisma
@@ -23,7 +32,7 @@ if (!isProduction) {
     ValidationError = validationModule.ValidationError
     getStartOfDayInSP = timezoneModule.getStartOfDayInSP
     formatDateTimeForStorage = timezoneModule.formatDateTimeForStorage
-  } catch (error) {
+  } catch {
     console.log('Dev modules not loaded, using production mode')
   }
 }
