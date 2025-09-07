@@ -1,19 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
-import { BookingSchema, validateBookingConflict, ValidationError } from '@/lib/validation'
-import { getStartOfDayInSP, formatDateTimeForStorage } from '@/lib/timezone'
-import { mockBookings, isVercel } from '@/lib/mock-data'
+import { mockBookings } from '@/lib/mock-data'
+
+// Check if running on Vercel/production
+const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'
+
+// Only import these in development
+let prisma: any = null
+let BookingSchema: any = null
+let validateBookingConflict: any = null
+let ValidationError: any = null
+let getStartOfDayInSP: any = null
+let formatDateTimeForStorage: any = null
+
+if (!isProduction) {
+  try {
+    const dbModule = require('@/lib/db')
+    const validationModule = require('@/lib/validation')
+    const timezoneModule = require('@/lib/timezone')
+    
+    prisma = dbModule.prisma
+    BookingSchema = validationModule.BookingSchema
+    validateBookingConflict = validationModule.validateBookingConflict
+    ValidationError = validationModule.ValidationError
+    getStartOfDayInSP = timezoneModule.getStartOfDayInSP
+    formatDateTimeForStorage = timezoneModule.formatDateTimeForStorage
+  } catch (error) {
+    console.log('Dev modules not loaded, using production mode')
+  }
+}
 
 export async function GET(request: NextRequest) {
   try {
     console.log('GET /api/bookings - Environment check:', {
       VERCEL: process.env.VERCEL,
       NODE_ENV: process.env.NODE_ENV,
-      isVercel
+      isProduction
     })
     
     // Always use mock data in production/Vercel
-    if (isVercel) {
+    if (isProduction) {
       console.log('Using mock data for Vercel/production')
       return NextResponse.json({ bookings: mockBookings })
     }
@@ -28,6 +53,9 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       )
     }
+    
+    const fromDate = new Date(from)
+    const toDate = new Date(to)
     
     const startOfFromDate = getStartOfDayInSP(fromDate)
     const startOfToDate = getStartOfDayInSP(toDate)
@@ -61,13 +89,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('POST /api/bookings - Environment check:', { isVercel })
+    console.log('POST /api/bookings - Environment check:', { isProduction })
     
     const body = await request.json()
     console.log('POST body:', body)
     
     // On Vercel (demo), simulate creation but return mock data
-    if (isVercel) {
+    if (isProduction) {
       console.log('Creating mock booking for Vercel')
       
       // Return a mock created booking without complex validation

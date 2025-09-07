@@ -1,15 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
-import { BookingSchema, validateBookingConflict, ValidationError } from '@/lib/validation'
-import { getStartOfDayInSP, formatDateTimeForStorage } from '@/lib/timezone'
-import { isVercel } from '@/lib/mock-data'
+
+// Check if running on Vercel/production
+const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'
+
+// Only import these in development
+let prisma: any = null
+let BookingSchema: any = null
+let validateBookingConflict: any = null
+let ValidationError: any = null
+let getStartOfDayInSP: any = null
+let formatDateTimeForStorage: any = null
+
+if (!isProduction) {
+  try {
+    const dbModule = require('@/lib/db')
+    const validationModule = require('@/lib/validation')
+    const timezoneModule = require('@/lib/timezone')
+    
+    prisma = dbModule.prisma
+    BookingSchema = validationModule.BookingSchema
+    validateBookingConflict = validationModule.validateBookingConflict
+    ValidationError = validationModule.ValidationError
+    getStartOfDayInSP = timezoneModule.getStartOfDayInSP
+    formatDateTimeForStorage = timezoneModule.formatDateTimeForStorage
+  } catch (error) {
+    console.log('Dev modules not loaded, using production mode')
+  }
+}
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log('PATCH /api/bookings/[id] - Environment check:', { isVercel })
+    console.log('PATCH /api/bookings/[id] - Environment check:', { isProduction })
     
     const { id } = await params
     const body = await request.json()
@@ -17,7 +41,7 @@ export async function PATCH(
     console.log('PATCH id:', id, 'body:', body)
     
     // On Vercel, return mock success response
-    if (isVercel) {
+    if (isProduction) {
       const booking = {
         id,
         name: body.name || 'Updated User',
@@ -126,13 +150,13 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log('DELETE /api/bookings/[id] - Environment check:', { isVercel })
+    console.log('DELETE /api/bookings/[id] - Environment check:', { isProduction })
     
     const { id } = await params
     console.log('DELETE id:', id)
     
     // On Vercel, return mock success response
-    if (isVercel) {
+    if (isProduction) {
       console.log('Returning mock delete success')
       return NextResponse.json({ success: true })
     }
