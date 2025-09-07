@@ -6,6 +6,18 @@ import { mockBookings, isVercel } from '@/lib/mock-data'
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('GET /api/bookings - Environment check:', {
+      VERCEL: process.env.VERCEL,
+      NODE_ENV: process.env.NODE_ENV,
+      isVercel
+    })
+    
+    // Always use mock data in production/Vercel
+    if (isVercel) {
+      console.log('Using mock data for Vercel/production')
+      return NextResponse.json({ bookings: mockBookings })
+    }
+    
     const { searchParams } = new URL(request.url)
     const from = searchParams.get('from')
     const to = searchParams.get('to')
@@ -15,21 +27,6 @@ export async function GET(request: NextRequest) {
         { error: 'Parâmetros from e to são obrigatórios' },
         { status: 400 }
       )
-    }
-    
-    const fromDate = new Date(from)
-    const toDate = new Date(to)
-    
-    if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
-      return NextResponse.json(
-        { error: 'Datas inválidas' },
-        { status: 400 }
-      )
-    }
-    
-    // Use mock data on Vercel, real database locally
-    if (isVercel) {
-      return NextResponse.json({ bookings: mockBookings })
     }
     
     const startOfFromDate = getStartOfDayInSP(fromDate)
@@ -64,9 +61,32 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    console.log('POST /api/bookings - Environment check:', { isVercel })
     
-    // Parse and validate the input
+    const body = await request.json()
+    console.log('POST body:', body)
+    
+    // On Vercel (demo), simulate creation but return mock data
+    if (isVercel) {
+      console.log('Creating mock booking for Vercel')
+      
+      // Return a mock created booking without complex validation
+      const booking = {
+        id: Date.now().toString(),
+        name: body.name || 'Mock User',
+        room: body.room || 'MACHADO',
+        date: new Date(),
+        startTime: body.startTime || '09:00',
+        endTime: body.endTime || '10:00',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+      
+      console.log('Returning mock booking:', booking)
+      return NextResponse.json({ booking }, { status: 201 })
+    }
+    
+    // Parse and validate the input for local development
     const result = BookingSchema.safeParse({
       ...body,
       date: new Date(body.date),
@@ -86,28 +106,6 @@ export async function POST(request: NextRequest) {
     }
     
     const validatedData = result.data
-    
-    // On Vercel (demo), simulate creation but return mock data
-    if (isVercel) {
-      // Check conflicts with mock data
-      const conflictError = validateBookingConflict(validatedData, mockBookings)
-      if (conflictError) {
-        return NextResponse.json(
-          { error: conflictError },
-          { status: 409 }
-        )
-      }
-      
-      // Return a mock created booking
-      const booking = {
-        id: Date.now().toString(),
-        ...validatedData,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
-      
-      return NextResponse.json({ booking }, { status: 201 })
-    }
     
     // Local database logic
     const startOfDay = getStartOfDayInSP(validatedData.date)

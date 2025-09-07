@@ -9,19 +9,28 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    console.log('PATCH /api/bookings/[id] - Environment check:', { isVercel })
+    
     const { id } = await params
     const body = await request.json()
     
+    console.log('PATCH id:', id, 'body:', body)
+    
     // On Vercel, return mock success response
     if (isVercel) {
-      return NextResponse.json({
-        booking: {
-          id,
-          ...body,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }
-      })
+      const booking = {
+        id,
+        name: body.name || 'Updated User',
+        room: body.room || 'MACHADO',
+        date: new Date(body.date || new Date()),
+        startTime: body.startTime || '09:00',
+        endTime: body.endTime || '10:00',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+      
+      console.log('Returning updated mock booking:', booking)
+      return NextResponse.json({ booking })
     }
     
     // Check if booking exists
@@ -117,10 +126,14 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    console.log('DELETE /api/bookings/[id] - Environment check:', { isVercel })
+    
     const { id } = await params
+    console.log('DELETE id:', id)
     
     // On Vercel, return mock success response
     if (isVercel) {
+      console.log('Returning mock delete success')
       return NextResponse.json({ success: true })
     }
     

@@ -34,4 +34,4 @@ export const mockBookings = [
   },
 ]
 
-export const isVercel = process.env.VERCEL === '1'
+export const isVercel = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production'
