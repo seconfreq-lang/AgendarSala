@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { BookingSchema, validateBookingConflict, ValidationError } from '@/lib/validation'
 import { getStartOfDayInSP, formatDateTimeForStorage } from '@/lib/timezone'
+import { mockBookings, isVercel } from '@/lib/mock-data'
 
 export async function GET(request: NextRequest) {
   try {
@@ -24,6 +25,11 @@ export async function GET(request: NextRequest) {
         { error: 'Datas inválidas' },
         { status: 400 }
       )
+    }
+    
+    // Use mock data on Vercel, real database locally
+    if (isVercel) {
+      return NextResponse.json({ bookings: mockBookings })
     }
     
     const startOfFromDate = getStartOfDayInSP(fromDate)
@@ -81,7 +87,29 @@ export async function POST(request: NextRequest) {
     
     const validatedData = result.data
     
-    // Get existing bookings for conflict check
+    // On Vercel (demo), simulate creation but return mock data
+    if (isVercel) {
+      // Check conflicts with mock data
+      const conflictError = validateBookingConflict(validatedData, mockBookings)
+      if (conflictError) {
+        return NextResponse.json(
+          { error: conflictError },
+          { status: 409 }
+        )
+      }
+      
+      // Return a mock created booking
+      const booking = {
+        id: Date.now().toString(),
+        ...validatedData,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+      
+      return NextResponse.json({ booking }, { status: 201 })
+    }
+    
+    // Local database logic
     const startOfDay = getStartOfDayInSP(validatedData.date)
     const endOfDay = new Date(startOfDay)
     endOfDay.setDate(endOfDay.getDate() + 1)

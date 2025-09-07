@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { BookingSchema, validateBookingConflict, ValidationError } from '@/lib/validation'
 import { getStartOfDayInSP, formatDateTimeForStorage } from '@/lib/timezone'
+import { isVercel } from '@/lib/mock-data'
 
 export async function PATCH(
   request: NextRequest,
@@ -10,6 +11,18 @@ export async function PATCH(
   try {
     const { id } = await params
     const body = await request.json()
+    
+    // On Vercel, return mock success response
+    if (isVercel) {
+      return NextResponse.json({
+        booking: {
+          id,
+          ...body,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }
+      })
+    }
     
     // Check if booking exists
     const existingBooking = await prisma.booking.findUnique({
@@ -105,6 +118,11 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
+    
+    // On Vercel, return mock success response
+    if (isVercel) {
+      return NextResponse.json({ success: true })
+    }
     
     // Check if booking exists
     const existingBooking = await prisma.booking.findUnique({
